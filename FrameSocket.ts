@@ -63,7 +63,7 @@ export class FrameSocket {
   }
   public onconnection: (connection: Connection) => void = () => {};
   private onSynEvent(event: MessageEvent): void {
-    const synack = (this.synacks[event.data.sid] = <any>[]);
+    const synack = (this.synacks[event.data.sid] = <Synack[]>[]);
     [].slice.call(self.frames).forEach((frame: Window) => {
       const synacknonce = randomid();
       synack.push({
@@ -96,7 +96,7 @@ export class FrameSocket {
     });
   }
   private onAckEvent(event: MessageEvent) {
-    (this.synacks[event.data.sid] || <any>[]).forEach(
+    (this.synacks[event.data.sid] || <Synack[]>[]).forEach(
       (synack: Synack, i: number, synacks: Synack[]) => {
         if (
           !synack ||
