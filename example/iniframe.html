@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>iframe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  iniframe
+  <div id="console-area" style="overflow: scroll; margin: 0; padding: 0; width: 100%; height: 200px; border: 1px solid;"></div>
+  <script src="//0.0.0.0:3000/dist/FrameSocket.js"></script>
+  <script>
+    var socket = new FrameSocket(window);
+    log("start iframe window")
+    socket.onconnection = function (connection) {
+      log("connect. at iframe");
+      connection.ondata = function (data) {
+        log("receive data at iframe", JSON.stringify(data, null, "  "));
+      };
+      log("start send message by 1 seconds interval at iframe");
+      setInterval(() => {
+        connection.send("this message from iframe: " + Date.now());
+      }, 1000);
+    };
+    socket.connect(window.top);
+    function log() {
+      console.log.apply(console, arguments);
+      var span = document.createElement("span");
+      span.innerText = [].slice.call(arguments).join(" ") + "\n";
+      document.getElementById("console-area").appendChild(span);
+    }
+  </script>
+</body>
+
+</html>
