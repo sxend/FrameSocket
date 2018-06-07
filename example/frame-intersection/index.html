@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>index</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  <script src="//localhost:3000/dist/FrameSocket.js"></script>
+  <div style="height: 800px;"></div>
+  <iframe style="width: 100%; height: 250px; border: none;" src="//0.0.0.0:3000/example/frame-intersection/iniframe.html"></iframe>
+  <div style="height: 800px;"></div>
+  <script>
+    var socket = new FrameSocket(window);
+    socket.onconnection = function (connection) {
+      connection.ondata = function (data) {
+        if (data.task === "inview") {
+          var observer = new IntersectionObserver(function (event) {
+            if (event[0]) connection.send({
+              intersectionRatio: event[0].intersectionRatio
+            });
+          }, {
+            threshold: data.threshold
+          });
+          observer.observe(connection.frame);
+        }
+      }
+    };
+  </script>
+</body>
+
+</html>

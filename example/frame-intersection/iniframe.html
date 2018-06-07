@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>iframe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  iniframe
+  <script src="//0.0.0.0:3000/dist/FrameSocket.js"></script>
+  <script>
+    var socket = new FrameSocket(window);
+    socket.onconnection = function (connection) {
+      connection.ondata = function (data) {
+        if (data.intersectionRatio > 0.5) {
+          document.body.style.backgroundColor = "#66ff33";
+        } else {
+          document.body.style.backgroundColor = "#fff";
+        }
+      };
+      connection.send({
+        task: "inview",
+        threshold: Array(101).fill(0).map((x, i) => x + i / 100)
+      });
+    };
+    socket.connect(window.top);
+  </script>
+</body>
+
+</html>

@@ -4,7 +4,8 @@ export class Connection {
   constructor(
     private socket: FrameSocket,
     private cid: string,
-    private target: Window
+    public target: Window,
+    public frame: HTMLIFrameElement,
   ) {}
   send(data: any): void {
     const message = {
@@ -25,6 +26,7 @@ interface Synack {
   nonce: string;
   synacknonce: string;
   target: Window;
+  frame: HTMLIFrameElement;
 }
 export class FrameSocket {
   private syns: Syn[] = [];
@@ -64,10 +66,13 @@ export class FrameSocket {
   public onconnection: (connection: Connection) => void = () => {};
   private onSynEvent(event: MessageEvent): void {
     const synack = (this.synacks[event.data.sid] = <Synack[]>[]);
-    [].slice.call(self.frames).forEach((frame: Window) => {
+    // [].slice.call(self.frames)
+    [].slice.call(self.document.querySelectorAll("iframe"))
+      .forEach((frame: HTMLIFrameElement) => {
       const synacknonce = randomid();
       synack.push({
-        target: frame,
+        frame: frame,
+        target: frame.contentWindow,
         nonce: event.data.nonce,
         synacknonce: synacknonce
       });
@@ -76,7 +81,7 @@ export class FrameSocket {
         sid: event.data.sid,
         synacknonce: synacknonce
       };
-      frame.postMessage(message, "*");
+      frame.contentWindow.postMessage(message, "*");
     });
   }
   private onSynackEvent(event: MessageEvent): void {
@@ -90,7 +95,7 @@ export class FrameSocket {
       };
       syn.target.postMessage(message, "*");
       const cid = event.data.synacknonce + syn.nonce;
-      this.connections[cid] = new Connection(this, cid, syn.target);
+      this.connections[cid] = new Connection(this, cid, syn.target, null);
       this.onconnection(this.connections[cid]);
       syns.splice(i, 1);
     });
@@ -107,7 +112,7 @@ export class FrameSocket {
         }
         const cid = synack.synacknonce + synack.nonce;
         const target = synack.target;
-        this.connections[cid] = new Connection(this, cid, target);
+        this.connections[cid] = new Connection(this, cid, target, synack.frame);
         this.onconnection(this.connections[cid]);
         synacks.splice(i, 1);
         delete this.synacks[event.data.sid];
